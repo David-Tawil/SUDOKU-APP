@@ -1,73 +1,80 @@
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
+/**
+ * controls the view and model Sudoku game
+ */
 public class SudokuController {
 
-     SudokuModel sModel = new SudokuModel();
-     SudokuView sView = new SudokuView();
+    SudokuModel sudokuModel;
+    SudokuView sudokuView;
 
-     public SudokuController(){
-        sView.clearButtonAddActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                sModel.clearMatrix();
-                sView.clearMatrix();
+    /**
+     * construct controller
+     *
+     * @param sm sudoku model
+     * @param sv sudoku view
+     */
+    public SudokuController(SudokuModel sm, SudokuView sv) {
+        sudokuModel = sm;
+        sudokuView = sv;
+
+        setListeners();
+
+        sudokuModel.generateBoard(SudokuModel.EASY);
+        setViewAsModel();
+    }
+
+    // sets the view to be like the model
+    private void setViewAsModel() {
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                if (sudokuModel.getCellValue(row, col) != 0)
+                    sudokuView.setCellUneditable(row, col, sudokuModel.getCellValue(row, col));
+            }
+        }
+    }
+
+    // creates action listeners and add them to graphical components (as buttons etc)
+    private void setListeners() {
+        // difficulty buttons
+        sudokuView.difficultyButtonAddActionListener(e -> {
+            sudokuModel.generateBoard(Integer.parseInt(e.getActionCommand()));
+            sudokuView.clearBoard();
+            setViewAsModel();
+        });
+        // solve button
+        sudokuView.solveButtonAddActionListener(e -> {
+            sudokuModel.solve();
+            setViewAsModel();
+        });
+        // clear button
+        sudokuView.clearButtonAddActionListener(e -> {
+            sudokuModel.clearBoard();
+            sudokuView.clearBoard();
+        });
+        // set button
+        sudokuView.setButtonAddActionListener(e -> {
+            sudokuView.setCustomBoard(); // color the numbers
+        });
+        // cells change listener
+        sudokuView.cellsAddChangeListener(e -> {
+            int row = ((SudokuView.CellPanel) e.getSource()).getRow();
+            int col = ((SudokuView.CellPanel) e.getSource()).getCol();
+            int num;
+            if (((SudokuView.CellPanel) e.getSource()).getText().equals(""))
+                num = 0;
+            else
+                num = ((SudokuView.CellPanel) e.getSource()).getInt();
+            try {
+                if (sudokuModel.getCellValue(row, col) != num) {
+                    sudokuModel.setCellValue(row, col, num);
+                    sudokuView.setErrorLabelText("");
+                    if (sudokuModel.isSolvedBoard())
+                        sudokuView.popupMsg("Well-Done!!!\nTry harder level...");
+                }
+            } catch (IllegalArgumentException e1) {
+                e1.printStackTrace();
+                sudokuView.setErrorLabelText(e1.getMessage());
+                ((SudokuView.CellPanel) e.getSource()).setText("");
             }
         });
-        sView.setButtonAddActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                sView.setCustomSudoku();
-            }
-        });
-         sView.cellsAddChangeListener(new ChangeListener() {
-             @Override
-             public void stateChanged(ChangeEvent e) {
-                 int row = ((SudokuView.CellPanel)e.getSource()).getRow();
-                 int col = ((SudokuView.CellPanel)e.getSource()).getCol();
-                 int num;
-                 if( ((SudokuView.CellPanel)e.getSource()).getText().equals(""))
-                     num = 0;
-                 else
-                     num = ((SudokuView.CellPanel)e.getSource()).getInt();
-                 try {
-                     sModel.set(row,col,num);
-
-                 } catch (IllegalArgumentException e1){
-                     e1.printStackTrace();
-                     sView.errorMsg(e1.getMessage());
-                     ((SudokuView.CellPanel)e.getSource()).setText("");
-                 }
-             }
-         } );
-       /* sView.cellsAddActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int row = ((SudokuView.CellPanel)e.getSource()).getRow();
-                int col = ((SudokuView.CellPanel)e.getSource()).getCol();
-                try {
-                    int num = Integer.parseInt( ((SudokuView.CellPanel)e.getSource()).getText() );
-                    sModel.add(row,col,num);
-
-                }catch (NumberFormatException e1){
-                    e1.printStackTrace();
-                    sView.errorMsg("Please enter only legal numbers");
-                    ((SudokuView.CellPanel)e.getSource()).setText("");
-                }
-                catch (IllegalArgumentException e1){
-                    e1.printStackTrace();
-                    sView.errorMsg(e1.getMessage());
-                    ((SudokuView.CellPanel)e.getSource()).setText("");
-                }
-            }
-        });*/
-
-
-     }
-
-
-
-
+    }
 }
