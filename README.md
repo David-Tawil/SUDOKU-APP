@@ -1,3 +1,5 @@
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/David-Tawil/SUDOKU-APP) 
+
 # SUDOKU-APP
 Sudoku generator and solver with interactive GUI
 
